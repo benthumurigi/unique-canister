@@ -31,6 +31,11 @@ export function createPoll(payload: PollPayload): Result<string, string> {
         creator: ic.idOf.caller,
         createdAt: ic.time(),
     };
+
+    if (poll.question.trim().length === 0 || poll.options.length === 0) {
+        return Result.Err(`Error creating poll: Invalid poll data.`);
+    }
+
     pollStorage.push(poll);
     return Result.Ok(`Poll created with ID: ${poll.id}`);
 }
