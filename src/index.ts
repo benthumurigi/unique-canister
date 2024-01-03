@@ -31,6 +31,11 @@ export function createPoll(payload: PollPayload): Result<string, string> {
         creator: ic.idOf.caller,
         createdAt: ic.time(),
     };
+
+    if (poll.question.trim().length === 0 || poll.options.length === 0) {
+        return Result.Err(`Error creating poll: Invalid poll data.`);
+    }
+
     pollStorage.push(poll);
     return Result.Ok(`Poll created with ID: ${poll.id}`);
 }
@@ -44,7 +49,7 @@ export function getAllPolls(): Vec<Poll> {
 // Define the update function to vote on a poll
 update
 export function vote(pollId: string, optionIndex: nat64): Result<string, string> {
-    const poll = pollStorage.find((poll) => poll.id === pollId);
+    const poll = findPollById(pollId);
     if (!poll) {
         return Result.Err(`Poll with ID ${pollId} not found`);
     }
@@ -60,10 +65,15 @@ export function vote(pollId: string, optionIndex: nat64): Result<string, string>
 // Define the query function to get the results of a poll
 query
 export function getPollResults(pollId: string): Result<Vec<nat64>, string> {
-    const poll = pollStorage.find((poll) => poll.id === pollId);
+    const poll = findPollById(pollId);
     if (!poll) {
         return Result.Err(`Poll with ID ${pollId} not found`);
     }
 
     return Result.Ok(poll.votes);
+}
+
+// Finds a specific poll by its id
+function findPollById(pollId: string): Opt<Poll> {
+    return pollStorage.find((poll) => poll.id === pollId);
 }
